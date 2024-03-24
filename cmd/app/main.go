@@ -28,24 +28,25 @@ func main() {
 	}
 
 	// Подготвока к запуску сервера
-
 	ch := make(chan os.Signal, 1) // Создаем сигнал
 
 	signal.Notify(ch, os.Interrupt, os.Kill)
 
 	go ListenForShutdown(ch)
 
-	handler := HandlerServer.MannersHandler{}
+	router := HandlerServer.SetHandlerHTTPRouter()
+
+	HandlerServer.HandlerFunc(router)
 
 	// Запуск сервера
 	log.Println("Trying start server")
-	errServer := manners.ListenAndServe(":"+strconv.Itoa(int(config.Port)), &handler) // Создаем сервер
+	errServer := manners.ListenAndServe(":"+strconv.Itoa(int(config.Port)), router) // Создаем сервер
 	if errServer != nil {
 		log.Fatal("Failed to start server")
 	}
-
 }
 
+// ListenForShutdown Функция для безопасного закрытия подключения к серверу
 func ListenForShutdown(ch <-chan os.Signal) {
 	<-ch
 	manners.Close()
