@@ -1,9 +1,12 @@
 package HandlerServer
 
 import (
-	"fmt"
+	dirServe "WebServerUbuntu/pkg/FunctionsString"
 	"github.com/julienschmidt/httprouter"
+	"html/template"
+	"log"
 	"net/http"
+	"os"
 )
 
 func SetHandlerHTTPRouter() *httprouter.Router {
@@ -12,10 +15,21 @@ func SetHandlerHTTPRouter() *httprouter.Router {
 
 func HandlerFunc(router *httprouter.Router) {
 
-	router.GET("/", Hello)
+	router.GET("/", HomePage)
 }
 
-func Hello(res http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+// HomePage главная страница мониторинга
+func HomePage(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
-	fmt.Fprintf(res, "fff")
+	dir, _ := os.Getwd()
+	dir = dirServe.GetDir(dir, 2)
+
+	parseFile, errParse := template.ParseFiles(dir + "/web/HomePage/index.html")
+	if errParse != nil {
+		log.Fatal("Couldn't find the file")
+	}
+
+	if errExecuteHTML := parseFile.Execute(res, req); errExecuteHTML != nil {
+		log.Fatal("Failed to execute file html")
+	}
 }

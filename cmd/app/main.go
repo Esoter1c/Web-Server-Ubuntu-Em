@@ -3,10 +3,12 @@ package main
 import (
 	"WebServerUbuntu/internal/ConfigServer"
 	"WebServerUbuntu/internal/HandlerServer"
-	dirServe "WebServerUbuntu/pkg/functionsString"
+	dirServe "WebServerUbuntu/pkg/FunctionsString"
+	"errors"
 	"github.com/BurntSushi/toml"
 	"github.com/braintree/manners"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
@@ -16,9 +18,11 @@ func main() {
 
 	log.Println("Trying to read a config")
 
-	dir, _ := os.Getwd()               // Получение директории файла
+	dir, _ := os.Getwd() // Получение директории файла
+
 	dirFile := dirServe.GetDir(dir, 2) // Получаем директорию конфига
-	dirFile += "config.toml"
+
+	dirFile += "internal/ConfigServer/configServer.toml"
 
 	config := ConfigServer.ConfigServer{}
 
@@ -41,7 +45,7 @@ func main() {
 	// Запуск сервера
 	log.Println("Trying start server")
 	errServer := manners.ListenAndServe(":"+strconv.Itoa(int(config.Port)), router) // Создаем сервер
-	if errServer != nil {
+	if errors.Is(errServer, http.ErrServerClosed) {
 		log.Fatal("Failed to start server")
 	}
 }
